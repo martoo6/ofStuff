@@ -21,7 +21,7 @@ void testApp::setup(){
         }
     }
 
-    if(calculo(0,0,0)) ofBackground(0,255);
+    if(calculo(1,0,0)) ofBackground(0,255);
     ofSetBackgroundAuto(true);
     myfont.loadFont("arial.ttf", 10);
     ofNoFill();

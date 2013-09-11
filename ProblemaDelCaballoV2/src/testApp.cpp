@@ -1,7 +1,8 @@
 #include "testApp.h"
 #define ALTO 8
 #define ANCHO 8
-const int_fast8_t ultimoNumero = (ALTO*ANCHO)-1;
+//Debido a que utilizo uint_fast8_t el tamaño maximo es de 10*10
+const int_fast8_t ultimoNumero = ALTO*ANCHO;
 struct vector2i{
     int_fast8_t x;
     int_fast8_t y;
@@ -12,27 +13,29 @@ struct vector2i{
     vector2i(){}
 };
 typedef struct{
-    int_fast8_t valor;
+    uint_fast8_t valor;
     vector<vector2i> mov;
 }celda;
 celda matriz[ANCHO][ALTO];
-vector2i pos[ALTO*ANCHO];
+vector2i pos[ultimoNumero];
 //--------------------------------------------------------------
 void testApp::setup(){
     for(uint_fast8_t i=0;i<ANCHO;i++){
         for(uint_fast8_t e=0;e<ALTO;e++){
-            matriz[i][e].valor=-1;
-            if(e+2<8 && i-1>=0) matriz[i][e].mov.push_back(vector2i(-1,2));
-            if(e+2<8 && i+1<8) matriz[i][e].mov.push_back(vector2i(1,2));
-            if(e+1<8 && i-2>=0) matriz[i][e].mov.push_back(vector2i(-2,1));
-            if(e+1<8 && i+2<8) matriz[i][e].mov.push_back(vector2i(2,1));
+            matriz[i][e].valor=0;
+            if(e+2<ALTO && i-1>=0) matriz[i][e].mov.push_back(vector2i(-1,2));
+            if(e+2<ALTO && i+1<ANCHO) matriz[i][e].mov.push_back(vector2i(1,2));
+            if(e+1<ALTO && i-2>=0) matriz[i][e].mov.push_back(vector2i(-2,1));
+            if(e+1<ALTO && i+2<ANCHO) matriz[i][e].mov.push_back(vector2i(2,1));
             if(e-1>=0 && i-2>0) matriz[i][e].mov.push_back(vector2i(-2,-1));
-            if(e-1>=0 && i+2<8) matriz[i][e].mov.push_back(vector2i(2,-1));
+            if(e-1>=0 && i+2<ANCHO) matriz[i][e].mov.push_back(vector2i(2,-1));
             if(e-2>=0 && i-1>=0) matriz[i][e].mov.push_back(vector2i(-1,-2));
-            if(e-2>=0 && i+1<8) matriz[i][e].mov.push_back(vector2i(1,-2));
+            if(e-2>=0 && i+1<ANCHO) matriz[i][e].mov.push_back(vector2i(1,-2));
         }
     }
-    calculo(1,0,0);
+    calculo(1,1,1); //Current Number debe comenzar en 1 !
+
+    //Visualizacion
     ofBackground(0,255);
     ofSetBackgroundAuto(true);
     myfont.loadFont("arial.ttf", 10);
@@ -43,19 +46,19 @@ bool testApp::calculo(uint_fast8_t x, uint_fast8_t y, uint_fast8_t currentNumber
     matriz[x][y].valor=currentNumber;
     for(uint_fast8_t i=0;i<matriz[x][y].mov.size(); i++){
         const vector2i vec = matriz[x][y].mov[i];
-        if((matriz[x+vec.x][y+vec.y].valor==-1) && calculo(x+vec.x, y+vec.y, currentNumber+1)){
-            pos[currentNumber].x=x;
-            pos[currentNumber].y=y;
+        if((matriz[x+vec.x][y+vec.y].valor==0) && calculo(x+vec.x, y+vec.y, currentNumber+1)){
+            pos[currentNumber-1].x=x;
+            pos[currentNumber-1].y=y;
             return true;
         }
     }
     if(currentNumber==ultimoNumero) {
-        pos[ultimoNumero].x=x;
-        pos[ultimoNumero].y=y;
+        pos[ultimoNumero-1].x=x;
+        pos[ultimoNumero-1].y=y;
         matriz[x][y].valor=ultimoNumero;
         return true;
     }
-    matriz[x][y].valor=-1;
+    matriz[x][y].valor=0;
     return false;
 }
 
@@ -69,11 +72,11 @@ void testApp::draw(){
     ofTranslate(800/3,600/3);
 
     //Grilla
-    for(int i=0;i<=ANCHO;i++) ofLine(i*40,0,i*40,ALTO*40);
-    for(int e=0;e<=ALTO;e++) ofLine(0,e*40,ANCHO*40,e*40);
+    for(uint_fast8_t i=0;i<=ANCHO;i++) ofLine(i*40,0,i*40,ALTO*40);
+    for(uint_fast8_t e=0;e<=ALTO;e++) ofLine(0,e*40,ANCHO*40,e*40);
     //Texto
-    for(int i=0;i<ALTO;i++){
-        for(int e=0;e<ANCHO;e++){
+    for(uint_fast8_t i=0;i<ALTO;i++){
+        for(uint_fast8_t e=0;e<ANCHO;e++){
             char text[255];
             sprintf(text,"%d",matriz[e][i].valor);
             myfont.drawString(text,e*40+5,i*40+15);
@@ -82,7 +85,7 @@ void testApp::draw(){
 
     //Camino
     ofBeginShape();
-    for(int i=0;i<(ALTO*ANCHO);i++) ofVertex(pos[i].x*40+20,pos[i].y*40+20);
+    for(uint_fast8_t i=0;i<ultimoNumero;i++) ofVertex(pos[i].x*40+20,pos[i].y*40+20);
     ofEndShape();
 }
 
